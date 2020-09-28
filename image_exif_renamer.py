@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
-from os import rename
-from os.path import split, join, splitext
+from os import rename, makedirs
+from os.path import split, join, splitext, exists
 from argparse import ArgumentParser
 from exif import Image
 from datetime import datetime
@@ -16,7 +16,12 @@ def rename_file_based_on_exif(path):
     head, tail = split(path)
     _, ext = splitext(tail)
     new_path = join(head, filename + ext)
-    rename(path, new_path)
+    postfix = ''
+    if path != new_path:
+        while exists(new_path):
+            postfix += '.c'
+            new_path = join(head, filename + postfix + ext)
+        rename(path, new_path)
 
 
 # Press the green button in the gutter to run the script.
@@ -31,3 +36,7 @@ if __name__ == '__main__':
         except Exception as e:
             print(f'An exception occured while processing "{file}"')
             print_exc()
+            head, tail = split(file)
+            makedirs(join(head, 'problematic'), exist_ok=True)
+            new_path = join(head, 'problematic', tail)
+            rename(file, new_path)
